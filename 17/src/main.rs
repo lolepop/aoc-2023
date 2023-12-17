@@ -172,7 +172,7 @@ impl Ord for QueueItem {
     }
 }
 
-fn solve(board: &Vec<Vec<usize>>) -> usize {
+fn solve(board: &Vec<Vec<usize>>, minstep: isize, maxstep: isize) -> usize {
     let directions = [(1, 0), (-1, 0), (0, 1), (0, -1)];
     let mut queue: BinaryHeap<QueueItem> = BinaryHeap::from([QueueItem((0, 0), 0, ((0, 0), 0))]);
     let mut distances: HashMap<((isize, isize), Direction, isize), usize> = HashMap::new();
@@ -186,20 +186,20 @@ fn solve(board: &Vec<Vec<usize>>) -> usize {
         for direction in directions {
             if dir_moving == (-direction.0, -direction.1) { continue; }
             let mut pw = dist;
-            for i in 1..=MINSTEP {
+            for i in 1..=minstep {
                 let (nx, ny) = (x + direction.0 * i, y + direction.1 * i);
                 if let Some(weight) = get_board_pos(nx, ny) {
                     // let pw = dist + weight;
                     pw += weight;
                     let dir = if dir_moving == direction {
-                        if dir_count + i > MAXSTEP { break; }
+                        if dir_count + i > maxstep { break; }
                         (direction, dir_count + i)
                     } else {
                         (direction, i)
                     };
 
                     let k = ((nx, ny), direction, dir.1);
-                    if dir.1 >= MINSTEP && pw < *distances.get(&k).unwrap_or(&usize::MAX) {
+                    if dir.1 >= minstep && pw < *distances.get(&k).unwrap_or(&usize::MAX) {
                         distances.insert(k, pw);
                         queue.push(QueueItem((nx, ny), pw, dir));
                     }
@@ -214,6 +214,8 @@ fn solve(board: &Vec<Vec<usize>>) -> usize {
 
 fn main() {
     let puzzle = parse(INPUT);
-    let solution = solve(&puzzle);
+    let solution = solve(&puzzle, 1, 3);
+    println!("{solution}");
+    let solution = solve(&puzzle, 4, 10);
     println!("{solution}");
 }
